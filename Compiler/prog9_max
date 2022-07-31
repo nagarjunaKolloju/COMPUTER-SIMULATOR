@@ -1,0 +1,40 @@
+#include <stdio.h>
+blank main()
+{
+
+varZ c[100];//={11,21,12,3,4,51,1,7,8,10};
+varZ j;
+varZ max;
+
+varZ n;
+display("Enter n value-- ");
+scanZ(n);
+for(i=0;i<n;i=i+1)
+	{	
+		varZ i1;
+		i1=i+1;
+		display(i1);
+		display(" value -- ");
+		varZ k;
+		scanZ(k);
+		c[i]=k;
+		
+	}
+max=c[0];
+for(j=0;j<n;j=j+1)
+{
+	varZ var;
+	var=c[j];
+	if(var>max)
+	{
+	max=var;
+	}
+	else
+	{
+	   max=max;
+	}
+}
+display("\nMax element is ");
+display(max);
+display("\n");
+}

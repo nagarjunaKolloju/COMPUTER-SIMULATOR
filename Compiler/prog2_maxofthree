@@ -1,0 +1,45 @@
+#include <stdio.h>
+blank main()
+{
+
+	varZ a;
+	varZ b;
+	varZ c;
+	display("Enter a value - ");
+	scanZ(a);
+	display("\nEnter b value - ");
+	scanZ(b);
+	display("\nEnter c value - ");
+	scanZ(c);
+	if(a>b)
+	{
+		if(a>c)
+		{
+			display("a is largest number");
+		}
+		else
+		{
+			display("c is largest number");
+		}
+	
+	
+	}
+	else
+	{
+		if(b>c)
+		{
+			display("b is largest number");
+		}
+		else
+		{
+			display("c is largest number");
+		}
+	
+	
+	}
+	
+display("\n");
+
+
+
+}

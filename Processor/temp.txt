@@ -1,0 +1,3 @@
+$readmemb("path",registers);
+
+$writememb("path",registers);

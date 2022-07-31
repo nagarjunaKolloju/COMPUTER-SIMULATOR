@@ -1,0 +1,34 @@
+#include <stdio.h>
+
+blank main()
+{
+	varZ n;
+	
+	n=5;
+	varZ i=0;
+	varZ arr[5]={2,5,1,3,4};	
+	varZ p=1;
+	display("Initial Array     : ");
+	for(i=0;i<n;i=i+1)
+	{	
+		display(arr[i]);
+		display("  ");
+	}
+	
+	for(i=0;i<n;i=i+1)
+	{	
+		varZ k;
+		k=arr[i];
+		p=p*k;
+		arr[i]=p;
+	}
+	
+	display("\nModified Array : ");
+	for(i=0;i<n;i=i+1)
+	{	
+		display(arr[i]);
+		display("  ");
+	}
+	display("\n");
+
+}

@@ -1,0 +1,44 @@
+#include <stdio.h>
+
+blank main()
+{
+    varZ a[10]={7,8,1,2,3,18,9,17,4,6};
+    varZ i=0;
+    varZ j=0;
+    varZ len=10;
+    
+    display("\n");
+    for(i=0;i<9;i=i+1)
+    {
+    	varZ k;
+    	k=len-i;
+    	j=1;
+    	k=k-j;
+       for(j=0;j<k;j=j+1)
+       {
+       	      varZ k1;
+       	     k1=a[j];
+       	      varZ k2;
+       	      varZ k3=j+1;
+		k2=a[k3];
+       	      if(k1>k2)
+       	      {
+       	      	 a[j]=k2;
+       	      	 a[k3]=k1;
+       	      }
+       	      else
+       	      {
+       	      
+       	      }
+       	     
+       }
+       
+    }
+    display("Sorted Array -- ");
+    for(i=0;i<10;i=i+1)
+    {
+    display(a[i]);
+    display("  ");
+    }
+  display("\n");
+}

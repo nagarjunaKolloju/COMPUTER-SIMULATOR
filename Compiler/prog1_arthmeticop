@@ -1,0 +1,27 @@
+#include <stdio.h>
+blank main()
+{
+	display("Enter first number - ");
+	varZ a;
+	scanZ(a);
+	display("\nEnter second number - ");
+	varZ b;
+	scanZ(b);
+	display("\nSum of two numbers is: ");
+	varZ c;
+	c=b+a;
+	display(c);
+	display("\n\nDifference of two numbers is: ");
+	c=b-a;
+	display(c);
+	display("\n\nMultiplication of two numbers is: ");
+	c=b*a;
+	display(c);
+	display("\n\nDivision of two numbers is: ");
+	c=b/a;
+	display(c);
+	display("\n\nRemainder of two numbers is: ");
+	c=b%a;
+	display(c);
+	display("\n");
+}

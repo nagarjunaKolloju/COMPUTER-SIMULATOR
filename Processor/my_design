@@ -1,0 +1,46 @@
+#! /c/Source/iverilog-install/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1110-g18392a46)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "C:\iverilog\lib\ivl\system.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_sys.vpi";
+:vpi_module "C:\iverilog\lib\ivl\vhdl_textio.vpi";
+:vpi_module "C:\iverilog\lib\ivl\v2005_math.vpi";
+:vpi_module "C:\iverilog\lib\ivl\va_math.vpi";
+S_000001f9eef862b0 .scope module, "Adder_tb" "Adder_tb" 2 1;
+ .timescale 0 0;
+v000001f9eef83980_0 .var "i1", 31 0;
+v000001f9eef83a20_0 .var "i2", 31 0;
+v000001f9eef82f80_0 .net "o", 31 0, L_000001f9eef83ac0;  1 drivers
+S_000001f9eef86440 .scope module, "test" "Adder" 2 6, 3 1 0, S_000001f9eef862b0;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "in1";
+    .port_info 1 /INPUT 32 "in2";
+    .port_info 2 /OUTPUT 32 "out";
+v000001f9eef865d0_0 .net "in1", 31 0, v000001f9eef83980_0;  1 drivers
+v000001f9eef83840_0 .net "in2", 31 0, v000001f9eef83a20_0;  1 drivers
+v000001f9eef838e0_0 .net "out", 31 0, L_000001f9eef83ac0;  alias, 1 drivers
+L_000001f9eef83ac0 .arith/sum 32, v000001f9eef83980_0, v000001f9eef83a20_0;
+    .scope S_000001f9eef862b0;
+T_0 ;
+    %vpi_call 2 9 "$monitor", "%d,%d,%d", v000001f9eef83980_0, v000001f9eef83a20_0, v000001f9eef82f80_0 {0 0 0};
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v000001f9eef83980_0, 0, 32;
+    %pushi/vec4 252645135, 0, 32;
+    %store/vec4 v000001f9eef83a20_0, 0, 32;
+    %delay 100, 0;
+    %pushi/vec4 986895, 0, 32;
+    %store/vec4 v000001f9eef83980_0, 0, 32;
+    %pushi/vec4 4294967295, 0, 32;
+    %store/vec4 v000001f9eef83a20_0, 0, 32;
+    %delay 100, 0;
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v000001f9eef83980_0, 0, 32;
+    %end;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "Adder_tb.v";
+    "Adder.v";

@@ -1,0 +1,18 @@
+#include <stdio.h>
+blank main()
+{
+	varZ n;
+	display("Enter n value:");
+	scanZ(n);
+	varZ sum=0;
+	varZ i;
+	for(i=1;i<=n;i=i+1)
+	{
+		sum=sum+i;
+	}
+	display("\nSum of first n natural numbers is: ");
+	display(sum);
+
+display("\n");
+
+}

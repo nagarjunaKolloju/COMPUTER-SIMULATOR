@@ -1,0 +1,32 @@
+#include <stdio.h>
+blank main()
+{
+	varZ n;
+	n=10;
+	display("Enter n value: ");
+	scanZ(n);
+	varZ i=0;
+	varZ arr[100];
+	
+	for(i=0;i<n;i=i+1)
+	{	
+		varZ i1;
+		i1=i+1;
+		display(i1);
+		display(" value -- ");
+		varZ k;
+		scanZ(k);
+		arr[i]=k;
+		
+	}
+	varZ sum=0;
+	varZ m;
+	for(i=0;i<n;i=i+1)
+	{
+		m=arr[i];
+		sum=sum+m;
+	}
+	display("\nSum of all the elements of array is -- ");
+	display(sum);
+	display("\n");
+}

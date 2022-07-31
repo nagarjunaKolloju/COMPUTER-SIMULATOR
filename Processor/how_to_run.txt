@@ -1,0 +1,6 @@
+iverilog -o design module.v
+
+(Put all dependencies in running.txt)
+iverilog -o design -c running.txt
+
+vvp design
