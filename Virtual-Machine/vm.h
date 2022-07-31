@@ -80,14 +80,12 @@ string VM::getVMCode(string s)
     // Function/methods parameters - 5
     // Variable declaration - 6
     // Input-Output - 7
-    // New line - 8
+    // New Line - 8
     // Syntax Error - 9
 
     int typeOfInstruction = get3acTypeOfInstruction(tokens);
 
     // 3. Convert to appropriate VM Code
-    
-
     string vmcode = "";
     if (typeOfInstruction == 0)
     {
@@ -242,7 +240,7 @@ string VM::getVMCode(string s)
 
 int VM::get3acTypeOfInstruction(vector<Token> &v)
 {
-    //New movne
+    //New line
     if(v.empty())
         return 8;
 
@@ -315,7 +313,7 @@ string VM::getSegmentPos(Token &t)
         return s;
     }
 
-    cout<<"Not found!!! -> "<<t.name<<" -> addng to local"<<endl;
+    cout<<"Not found!!! -> "<<t.name<<" -> adding to local"<<endl;
 
     s += "local " + to_string(localVars.top().size());
     localVars.top().push_back(t.name);
@@ -343,24 +341,19 @@ void VM::vmCodeToAssembly()
     fout.close();
 }
 
-// 0-10 - gen
-// 11-pc,
-//12,13,14,15  - special
-
 string VM::memInit()
 {
     string armcode = "";
 
     // SP,LCL,ARG init
-    armcode += "mov r0, 0\n";
-    armcode += "mov r14, 256\n";
-    armcode += "str r14, [r0, 0]\n";
-    armcode += "str r14, [r0, 1]\n";
-    armcode += "str r14, [r0, 2]\n";
+    armcode += "li $r28,3\n";
+    armcode += "sw $r28,$zero(0)\n";
+    armcode += "sw $r28,$one(0)\n";
+    armcode += "sw $r28,$one(1)\n";
     
     // Reg Stack pointer(RSP) init
-    armcode += "mov r14, 16389\n";
-    armcode += "str r14, [r0, 16388]\n";
+    armcode += "li $r28,16389\n";
+    armcode += "sw $r28,$zero(16388)\n";
     return armcode;
 }
 
@@ -388,7 +381,7 @@ string VM::getAssemblyCode(string s)
     // Label - 8
     // print - 9
     // read - 10
-    // New line - 11
+    // New Line - 11
     // Syntax Error - 12
 
     int typeOfInstruction = getVMTypeOfInstruction(tokens);
@@ -402,16 +395,16 @@ string VM::getAssemblyCode(string s)
         // temp
         if(tokens.at(1).name.compare("temp")==0)
         {
-            // _ti <==> r(i%9+1)
-            int regNo = (stoi(tokens.at(2).name))%9+ 1;
+            // _ti <==> r(i%26)
+            int regNo = (stoi(tokens.at(2).name))%26;
 
-            // ri -> MEM[SP]
-            armcode += "\tldr r14,[r0, 0]\n";
-            armcode += "\tstr r" + to_string(regNo) + ", [r14, 0]\n";
+            // $ri -> MEM[SP]
+            armcode += "\tlw $r28,$zero(0)\n";
+            armcode += "\tsw $r" + to_string(regNo) + ",$r28(0)\n";
 
-            // SP++ 
-            armcode += "\tadd r14,r14,1\n";
-            armcode += "\tstr r14,[r0, 0]\n";
+            // SP++
+            armcode += "\tadd $r28,$r28,$one\n";
+            armcode += "\tsw $r28,$zero(0)\n";
         }
 
         else
@@ -419,31 +412,31 @@ string VM::getAssemblyCode(string s)
             // local
             if(tokens.at(1).name.compare("local")==0)
             {
-                // r14 <- MEM[LCL + i]
-                armcode += "\tldr r13,[r0, 1]\n";
-                armcode += "\tldr r14,[r13," + tokens.at(2).name + "]\n";
+                // $r28 <- MEM[LCL + i]
+                armcode += "\tlw $r27,$one(0)\n";
+                armcode += "\tlw $r28,$r27(" + tokens.at(2).name + ")\n";
             }
 
             // argument
             else if(tokens.at(1).name.compare("argument")==0)
             {
-                // r14 <- MEM[ARG + i]
-                armcode += "\tldr r13,[r0, 2]\n";
-                armcode += "\tldr r14,[r13," + tokens.at(2).name + "]\n";
+                // $r28 <- MEM[ARG + i]
+                armcode += "\tlw $r27,$one(1)\n";
+                armcode += "\tlw $r28,$r27(" + tokens.at(2).name + ")\n";
             }
 
             // constant
             else if(tokens.at(1).name.compare("constant")==0)
-                // r14 <- constant
-                armcode += "\tmov r14," + tokens.at(2).name + "\n";
+                // $r28 <- constant
+                armcode += "\tli $r28," + tokens.at(2).name + "\n";
 
-            // r14 -> MEM[SP]
-            armcode += "\tldr r13,[r0, 0]\n";
-            armcode += "\tstr r14,[r13, 0]\n";
+            // $r28 -> MEM[SP]
+            armcode += "\tlw $r27,$zero(0)\n";
+            armcode += "\tsw $r28,$r27(0)\n";
 
             // SP++
-            armcode += "\tadd r13,r13,1\n";
-            armcode += "\tstr r13,[r0, 0]\n";
+            armcode += "\tadd $r27,$r27,$one\n";
+            armcode += "\tsw $r27,$zero(0)\n";
 
         }
     }
@@ -452,40 +445,40 @@ string VM::getAssemblyCode(string s)
         // pop
 
         // SP--
-        armcode += "\tldr r14,[r0, 0]\n";
-        armcode += "\tadd r14,r14,-1\n";
-        armcode += "\tstr r14,[r0, 0]\n";
+        armcode += "\tlw $r28,$zero(0)\n";
+        armcode += "\taddi $r28,$r28,-1\n";
+        armcode += "\tsw $r28,$zero(0)\n";
 
         // temp
         if(tokens.at(1).name.compare("temp")==0)
         {
-            // _ti <==> r(i%9+1)
-            int regNo = (stoi(tokens.at(2).name))%9+1;
+            // _ti <==> r(i%26)
+            int regNo = (stoi(tokens.at(2).name))%26;
 
-            // ri <- MEM[SP-1]
-            armcode += "\tldr r" + to_string(regNo) + ",[r14, 0]\n";
+            // $ri <- MEM[SP-1]
+            armcode += "\tlw $r" + to_string(regNo) + ",$r28(0)\n";
         }
 
         else
         {
             
-            // r13 <- MEM[SP-1]
-            armcode += "\tldr r13,[r14,0]\n";
+            // $r27 <- MEM[SP-1]
+            armcode += "\tlw $r27,$r28(0)\n";
 
             // local
             if(tokens.at(1).name.compare("local")==0)
             {
-                // r13 -> MEM[LCL + i]
-                armcode += "\tldr r14, [r0, 1]\n";
-                armcode += "\tstr r13,[r14," + tokens.at(2).name + "]\n";
+                // $r27 -> MEM[LCL + i]
+                armcode += "\tlw $r28,$one(0)\n";
+                armcode += "\tsw $r27,$r28(" + tokens.at(2).name + ")\n";
             }
 
             // argument
             else if(tokens.at(1).name.compare("argument")==0)
             {
-                // r14 -> MEM[ARG + i]
-                armcode += "\tldr r14,[r0, 2])\n";
-                armcode += "\tstr r13,[r14," + tokens.at(2).name + "]\n";
+                // $r28 -> MEM[ARG + i]
+                armcode += "\tlw $r28,$one(1)\n";
+                armcode += "\tsw $r27,$r28(" + tokens.at(2).name + ")\n";
             }
 
         }
@@ -499,14 +492,13 @@ string VM::getAssemblyCode(string s)
         int k = stoi(tokens.at(2).name);
         if(k>0)
         { 
-            armcode += "\tldr r14,[r0, 0]\n";
+            armcode += "\tlw $r28,$zero(0)\n";
             while(k--)
             {
-                armcode += "\tstr r0,[r14, 0]\n";
-                // armcode += "\tmov r14,1\n";
-                armcode += "\tadd r14,r14,1\n";
+                armcode += "\tsw $zero,$r28(0)\n";
+                armcode += "\tadd $r28,$r28,$one\n";
             }
-            armcode += "\tstr r14,[r0, 0]\n";
+            armcode += "\tsw $r28,$zero(0)\n";
         }
     }
     else if(typeOfInstruction == 3)
@@ -514,37 +506,36 @@ string VM::getAssemblyCode(string s)
         // Function/methods call - 3
         
         // push return-addr // save return-addr
-        armcode += "\tldr r14,[r0, 0]\n";
-        armcode += "\tstr r15,[r14,0]\n";        
-        armcode += "\tadd r14,r14,1\n";
+        armcode += "\tlw $r28,$zero(0)\n";
+        armcode += "\tsw $r29,$r28(0)\n";
+        armcode += "\tadd $r28,$r28,$one\n";
 
         // push LCL // save LCL
-        armcode += "\tldr r13,[r0, 1]\n";
-        armcode += "\tstr r13,[r14,0]\n";
-        // armcode += "\tmov r14,1\n";
-        armcode += "\tadd r14,r14,1\n";
+        armcode += "\tlw $r27,$one(0)\n";
+        armcode += "\tsw $r27,$r28(0)\n";
+        armcode += "\tadd $r28,$r28,$one\n";
 
         // push ARG // save ARG
-        armcode += "\tldr r13,[r0, 2]\n";
-        armcode += "\tstr r13,[r14,0]\n";
-        armcode += "\tadd r14,r14,1\n";
+        armcode += "\tlw $r27,$one(1)\n";
+        armcode += "\tsw $r27,$r28(0)\n";
+        armcode += "\tadd $r28,$r28,$one\n";
 
         // ARG = SP - n - 3 // change ARG
         int n = stoi(tokens.at(2).name)+3;
-        armcode += "\tadd r13,r14,-" + to_string(n) + "\n";
-        armcode += "\tstr r13,[r0, 2]\n";
+        armcode += "\taddi $r27,$r28,-" + to_string(n) + "\n";
+        armcode += "\tsw $r27,$one(1)\n";
 
         // Update SP
-        armcode += "\tstr r14,[r0, 0]\n";
+        armcode += "\tsw $r28,$zero(0)\n";
 
         // LCL = SP // change LCL
-        armcode += "\tstr r14,[r0, 1]\n";
+        armcode += "\tsw $r28,$one(0)\n";
 
         // save r0-r25 values
         armcode += saveRegisters();
 
         // goto fun // call function
-        armcode += "\tb " + tokens.at(1).name + "\n\n";
+        armcode += "\tjal " + tokens.at(1).name + "\n\n";
 
         // return-addr: // a label
         // armcode += tokens.at(1).name + "_return:\n";
@@ -555,102 +546,102 @@ string VM::getAssemblyCode(string s)
         // return - 4
 
         // FRAME = LCL //
-        armcode += "\tldr r14,[r0, 1]\n";
+        armcode += "\tlw $r28,$one(0)\n";
 
         // RET = *(FRAME - 3) // keep return-addr
-        armcode += "\tadd r12,r15,r0\n";
-        armcode += "\tadd r15,r14,-3\n";
-        armcode += "\tldr r15,[r15,0]\n";
+        armcode += "\tadd $r26,$r29,$zero\n";
+        armcode += "\taddi $r29,$r28,-3\n";
+        armcode += "\tlw $r29,$r29(0)\n";
 
         // *ARG = pop() // return value
-        armcode += "\tldr r13,[r0, 0]\n";
-        armcode += "\tadd r13,r13,-1\n";
-        armcode += "\tldr r13,[r13,0]\n";
-        armcode += "\tldr r14,[r0, 2]\n";
-        armcode += "\tstr r13,[r14,0]\n";
+        armcode += "\tlw $r27,$zero(0)\n";
+        armcode += "\taddi $r27,$r27,-1\n";
+        armcode += "\tlw $r27,$r27(0)\n";
+        armcode += "\tlw $r28,$one(1)\n";
+        armcode += "\tsw $r27,$r28(0)\n";
 
         // SP = ARG + 1 // restore SP of called
-        armcode += "\tadd r14,r14,1\n";
-        armcode += "\tstr r14,[r0, 0]\n";
+        armcode += "\tadd $r28,$r28,$one\n";
+        armcode += "\tsw $r28,$zero(0)\n";
 
         // ARG = *(FRAME - 1) // restore ARG
-        armcode += "\tldr r14,[r0, 1]\n";
-        armcode += "\tadd r14,r14,-1\n";
-        armcode += "\tldr r13,[r14,0]\n";
-        armcode += "\tstr r13,[r0, 2]\n";
+        armcode += "\tlw $r28,$one(0)\n";
+        armcode += "\taddi $r28,$r28,-1\n";
+        armcode += "\tlw $r27,$r28(0)\n";
+        armcode += "\tsw $r27,$one(1)\n";
 
         // LCL = *(FRAME - 2) // restore LCL
-        armcode += "\tadd r14,r14,-1\n";
-        armcode += "\tldr r13,[r14,0]\n";
-        armcode += "\tstr r13,[r0, 1]\n";
+        armcode += "\taddi $r28,$r28,-1\n";
+        armcode += "\tlw $r27,$r28(0)\n";
+        armcode += "\tsw $r27,$one(0)\n";
 
         // Load old register values
         armcode += loadRegisters();
 
         // goto RET // back to return-addr
-        armcode += "\tbr r12\n";
+        armcode += "\tjr $r26\n";
     }
     else if(typeOfInstruction == 5)
     {
         // Arihmetic, Logical - 5
 
-        // r14 <- SP-1
-        armcode += "\tldr r14,[r0, 0]\n";
-        armcode += "\tadd r14,r14,-1\n";
+        // $r28 <- SP-1
+        armcode += "\tlw $r28,$zero(0)\n";
+        armcode += "\taddi $r28,$r28,-1\n";
 
-        // r13 <- MEM[SP-1]
-        armcode += "\tldr r13,r14(0)\n";
+        // $r27 <- MEM[SP-1]
+        armcode += "\tlw $r27,$r28(0)\n";
 
-        // r14 <- SP-2
-        armcode += "\tadd r14,r14,-1\n";
+        // $r28 <- SP-2
+        armcode += "\taddi $r28,$r28,-1\n";
 
-        // r12 <- MEM[SP-2]
-        armcode += "\tldr r12,r14(0)\n";
+        // $r26 <- MEM[SP-2]
+        armcode += "\tlw $r26,$r28(0)\n";
         
         // perform operation
         if(tokens.at(0).name.compare("add")==0)
-            armcode += "\tadd r12,r12,r13\n";
+            armcode += "\tadd $r26,$r26,$r27\n";
 
         else if(tokens.at(0).name.compare("sub")==0)
-            armcode += "\tsub r12,r12,r13\n";
+            armcode += "\tsub $r26,$r26,$r27\n";
 
         else if(tokens.at(0).name.compare("eq")==0)
-            armcode += "\tteq r12,r12,r13\n";
+            armcode += "\tseq $r26,$r26,$r27\n";
 
-        // else if(tokens.at(0).name.compare("lt")==0)
-        //     armcode += "\tlt r12,r12,r13\n";
+        else if(tokens.at(0).name.compare("lt")==0)
+            armcode += "\tslt $r26,$r26,$r27\n";
 
         else if(tokens.at(0).name.compare("and")==0)
-            armcode += "\tand r12,r12,r13\n";
+            armcode += "\tand $r26,$r26,$r27\n";
 
         else if(tokens.at(0).name.compare("or")==0)
-            armcode += "\torr r12,r12,r13\n";
+            armcode += "\tor $r26,$r26,$r27\n";
 
-        // r12 -> MEM[SP-2]
-        armcode += "\tstr r12,[r14,0]\n";
+        // $r26 -> MEM[SP-2]
+        armcode += "\tsw $r26,$r28(0)\n";
 
-        // r14 <- SP-1
-        armcode += "\tadd r14,r14,1\n";
-        armcode += "\tstr r14,[r0, 0]\n";
+        // $r28 <- SP-1
+        armcode += "\tadd $r28,$r28,$one\n";
+        armcode += "\tsw $r28,$zero(0)\n";
     
     }
     else if(typeOfInstruction == 6)
     {
         // if-goto - 6
 
-        // r13 <- MEM[SP]
-        armcode += "\tldr r14,[r0, 0]\n";
-        armcode += "\tadd r14,r14,-1\n";
-        armcode += "\tldr r13,[r14,0]\n";
+        // $r27 <- MEM[SP]
+        armcode += "\tlw $r28,$zero(0)\n";
+        armcode += "\taddi $r28,$r28,-1\n";
+        armcode += "\tlw $r27,$r28(0)\n";
 
-        // branch if r13==$one
-        armcode += "\tbeq r13,1," + tokens.at(1).name + "\n";
+        // branch if $r27==$one
+        armcode += "\tbeq $r27,$one," + tokens.at(1).name + "\n";
     
     }
     else if(typeOfInstruction == 7)
     {
         // goto - 7
-        armcode += "\tb " + tokens.at(1).name + "\n";
+        armcode += "\tj " + tokens.at(1).name + "\n";
 
     }
     else if(typeOfInstruction == 8)
@@ -659,7 +650,7 @@ string VM::getAssemblyCode(string s)
         if(tokens.at(1).name.compare("end")==0)
         {
             armcode = "end:\n";
-            armcode += "\tb end\n";
+            armcode += "\tj end\n";
         }
         else
             armcode += tokens.at(1).name + ":\n";
@@ -671,11 +662,11 @@ string VM::getAssemblyCode(string s)
         // temp
         if(tokens.at(1).name.compare("temp")==0)
         {
-            // _ti <==> r(i%9+1)
-            int regNo = (stoi(tokens.at(2).name))%9+1;
+            // _ti <==> r(i%26)
+            int regNo = (stoi(tokens.at(2).name))%26;
 
-            // ri -> MEM[16387]
-            armcode += "\tstr r" + to_string(regNo) + ",[r0,16387]\n";
+            // $ri -> MEM[16387]
+            armcode += "\tsw $r" + to_string(regNo) + ",$zero(16387)\n";
         }
 
         else
@@ -684,21 +675,21 @@ string VM::getAssemblyCode(string s)
             // local
             if(tokens.at(1).name.compare("local")==0)
             {
-                // r14 <- MEM[LCL + i]
-                armcode += "\tldr r14,[r0, 1]\n";
-                armcode += "\tldr r14,[r14," + tokens.at(2).name + "]\n";
+                // $r28 <- MEM[LCL + i]
+                armcode += "\tlw $r28,$one(0)\n";
+                armcode += "\tlw $r28,$r28(" + tokens.at(2).name + ")\n";
             }
 
             // argument
             else if(tokens.at(1).name.compare("argument")==0)
             {
-                // r14 <- MEM[ARG + i]
-                armcode += "\tldr r14,[r0, 2]\n";
-                armcode += "\tldr r14,[r14," + tokens.at(2).name + "]\n";
+                // $r28 <- MEM[ARG + i]
+                armcode += "\tlw $r28,$one(1)\n";
+                armcode += "\tlw $r28,$r28(" + tokens.at(2).name + ")\n";
             }
 
-            // r14 -> MEM[16387]
-            armcode += "\tstr r14,[r0,16387]\n";
+            // r28 -> MEM[16387]
+            armcode += "\tsw $r28,$zero(16387)\n";
         }
     }
     else if(typeOfInstruction == 10)
@@ -709,20 +700,18 @@ string VM::getAssemblyCode(string s)
         string label = "input_" + to_string(inputLabel++);
         armcode += label + ":\n";
 
-        // r14 <- MEM[16386]
-        armcode += "\tldr r14,[r0,16386]\n";
-        armcode += "\tbeq r14,r0," + label + "\n";
+        // $r28 <- MEM[16386]
+        armcode += "\tlw $r28,$zero(16386)\n";
+        armcode += "\tbeq $r28,$zero," + label + "\n";
 
         // temp
         if(tokens.at(1).name.compare("temp")==0)
         {
-            // _ti <==> r(i%9+1)
-            int regNo = (stoi(tokens.at(2).name))%9+1;
+            // _ti <==> r(i%26)
+            int regNo = (stoi(tokens.at(2).name))%26;
 
-            // ri <- MEM[16386]
-            // armcode += "\tadd r" + to_string(regNo) + ",r14,$zero\n";
-            armcode += "\tldr r" + to_string(regNo) + ",[r0, 16386]";
-            // armcode += "\tstr r" + to_string(regNo) + ",r14,$zero\n";
+            // $ri <- MEM[16386]
+            armcode += "\tadd $r" + to_string(regNo) + ",$r28,$zero\n";
         }
 
         else
@@ -731,24 +720,24 @@ string VM::getAssemblyCode(string s)
             // local
             if(tokens.at(1).name.compare("local")==0)
             {
-                // r13 <- LCL
-                armcode += "\tldr r13,[r0, 1]\n";
+                // $r27 <- LCL
+                armcode += "\tlw $r27,$one(0)\n";
             }
 
             // argument
             else if(tokens.at(1).name.compare("argument")==0)
             {
-                // r13 <- ARG
-                armcode += "\tldr r13,[r0, 2]\n";
+                // $r27 <- ARG
+                armcode += "\tlw $r27,$one(1)\n";
             }
 
-            // r14 -> MEM[16387]
-            armcode += "\tstr r14,[r13," + tokens.at(2).name + "]\n";
+            // r28 -> MEM[16387]
+            armcode += "\tsw $r28,$r27(" + tokens.at(2).name + ")\n";
         }
     }
     else if(typeOfInstruction == 11)
     {
-        // New movne
+        // New line
         armcode += "\n";
     }
     else
@@ -762,7 +751,7 @@ string VM::getAssemblyCode(string s)
 
 int VM::getVMTypeOfInstruction(vector<Token> &v)
 {
-    //New movne
+    //New Line
     if(v.empty())
         return 11;
 
@@ -800,25 +789,25 @@ int VM::getVMTypeOfInstruction(vector<Token> &v)
 string VM::saveRegisters()
 {
     string armcode = "";
-    armcode += "\tldr r14,[r0,16388]\n";
-    for(int i=0; i<=10; i++)
+    armcode += "\tlw $r28,$zero(16388)\n";
+    for(int i=0; i<=25; i++)
     {
-        armcode += "\tstr r" + to_string(i) + ",[r14,0]\n";
-        armcode += "\tadd r14,r14,1\n";
+        armcode += "\tsw $r" + to_string(i) + ",$r28(0)\n";
+        armcode += "\tadd $r28,$r28,$one\n";
     }
-    armcode += "\tstr r14,[r0,16388]\n";
+    armcode += "\tsw $r28,$zero(16388)\n";
     return armcode;
 }
 
 string VM::loadRegisters()
 {
     string armcode = "";
-    armcode += "\tldr r14,[r0,16388]\n";
-    for(int i=10; i>=0; i--)
+    armcode += "\tlw $r28,$zero(16388)\n";
+    for(int i=25; i>=0; i--)
     {
-        armcode += "\tadd r14,r14,-1\n";
-        armcode += "\tldr r" + to_string(i) + ",[r14,0]\n";
+        armcode += "\taddi $r28,$r28,-1\n";
+        armcode += "\tlw $r" + to_string(i) + ",$r28(0)\n";
     }
-    armcode += "\tstr r14,[r0,16388]\n";
+    armcode += "\tsw $r28,$zero(16388)\n";
     return armcode;
 }

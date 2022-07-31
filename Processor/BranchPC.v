@@ -1,3 +1,4 @@
+
 module BranchPC (
 	input [31:0] pcPlus4,
 	input [31:0] imm,

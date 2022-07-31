@@ -1,3 +1,4 @@
+
 module ALU (
 	input signed [31:0] in1,
 	input signed [31:0] in2,
@@ -64,5 +65,48 @@ module ALU (
 			6'b110101: // bltz control
 				begin out = 32'd0; zero = in1 < 32'd0; end
 		endcase
+	end
+endmodule 
+
+module ALU_tb;
+	reg [31:0] in1;
+	reg [31:0] in2;
+	reg [5:0] Con;
+	wire [31:0] out;
+	wire zero;
+	ALU alu(in1, in2, Con, out, zero);
+
+	initial begin
+		in1 = 32'h0fffffff;
+		in2 = 32'hffffffff;
+		Con = 6'b100000; //ADD
+		#100;
+		Con = 6'b100001; //ADDU
+		#100;
+		Con = 6'b100100; //AND
+		#100;
+		Con = 6'b100101; //OR
+		#100;
+		Con = 6'b100110; //XOR
+		#100;
+		Con = 6'b100010; //SUB
+		#100;
+		Con = 6'b100011; //SUBU
+		#100;
+		Con = 6'b000000; //SLL
+		#100;
+		Con = 6'b000100; //SLV 
+		#100;
+		Con = 6'b000011; //SRA
+		#100;
+		Con = 6'b000010; //SRL
+		#100;
+		Con = 6'b000110; //SRLV
+		#100;
+		Con = 6'b101010; //SLT
+		#100;
+		Con = 6'b101011; //SLTU
+		#200
+		Con = 6'b000000;
 	end
 endmodule 

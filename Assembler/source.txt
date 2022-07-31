@@ -2,6 +2,7 @@ lui $r28,3
 sw $r28,$zero(0)
 sw $r28,$one(0)
 sw $r28,$one(1)
+
 main:
 	lw $r28,$zero(0)
 	sw $zero,$r28(0)

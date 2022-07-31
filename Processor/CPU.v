@@ -1,3 +1,4 @@
+
 module CPU;
 	
 	wire [31:0] ramOutput;
@@ -27,7 +28,6 @@ module CPU;
 	//always begin #100 Clk = !Clk; end
 
 	initial begin
-		$monitor("%32b   ,   %d",instruction,aluOutput);
 		#10
 		Clk = !Clk;
 		#10
@@ -79,3 +79,4 @@ module CPU;
 	end
 	
 endmodule
+	

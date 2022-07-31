@@ -1,9 +1,11 @@
+minicc : y.tab.c lex.yy.c
+	g++ -g -o minicc lex.yy.c y.tab.c -ll -ly
 
-mycompiler: y.tab.c lex.yy.c 
-	gcc  y.tab.c -ll -w -o mycompiler
-lex.yy.c: parse.l
-	lex parse.l
-y.tab.c: parse.y
-	yacc  parse.y
+lex.yy.c : lexAn.l y.tab.c
+	lex lexAn.l
+
+y.tab.c : synAn.y
+	yacc -v -d synAn.y
+
 clean:
-	rm -f mycompiler myparser  y.tab.c lex.yy.c y.tab.h y.output y.dot a.out
+	rm -rf lex.yy.c y.tab.h y.tab.c y.output minicc

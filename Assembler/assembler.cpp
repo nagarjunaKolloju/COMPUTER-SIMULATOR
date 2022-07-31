@@ -27,8 +27,7 @@ string tobinary(string s)
 	int num = 0;
 	int flag = 0;
 	string str = "";
-	cout << '>' << s << endl;
-	for (int i = 1; i < s.length(); i++)
+	for (int i = 0; i < s.length(); i++)
 	{
 		if (s[i] == '-')
 		{
@@ -37,9 +36,9 @@ string tobinary(string s)
 		}
 		num = num * 10 + (s[i] - '0');
 	}
-	if (num >= pow(2, 12))
+	if (num >= pow(2, 16))
 		return "";
-	for (int i = 0; i < 12; i++)
+	for (int i = 0; i < 16; i++)
 	{
 		if (num % 2 == 0)
 			str += "0";
@@ -52,16 +51,15 @@ string tobinary(string s)
 	{
 		str = findTwoscomplement(str);
 	}
-	cout << '>' << str << endl;
 	return str;
 }
 
 string convert_jump_label(int num)
 {
 	string str = "";
-	if (num >= pow(2, 12))
+	if (num >= pow(2, 26))
 		return "";
-	for (int i = 0; i < 12; i++)
+	for (int i = 0; i < 26; i++)
 	{
 		if (num % 2 == 0)
 			str += "0";
@@ -84,7 +82,7 @@ string convert_branch_label(int num)
 	}
 	if (num >= pow(2, 16))
 		return "";
-	for (int i = 0; i < 12; i++)
+	for (int i = 0; i < 16; i++)
 	{
 		if (num % 2 == 0)
 			str += "0";
@@ -128,21 +126,19 @@ int main()
 	ifstream fin1;
 	int count = 0;
 	string result;
-	fin1.open("arm1.s");
+	fin1.open("source.txt");
 	ofstream fout1;
 	fout1.open("machinecode1.txt");
 
-	while (!fin1.eof()) //Label Check -----------------------
+	while (!fin1.eof())
 	{
 		string line;
 		int flag = 0;
 		getline(fin1, line);
 		for (int i = 0; i < line.length(); i++)
 		{
-			// printf("%c %d\n", line[0], i);
 			if (isalnum(line[i]))
 			{
-				// printf("Here %d", isalnum(line[i]));
 				flag = 1;
 				break;
 			}
@@ -158,17 +154,16 @@ int main()
 		count++;
 	}
 	fin1.close();
-	fin1.open("arm1.s");
+	fin1.open("source.txt");
 	count = 0;
 	while (!fin1.eof())
 	{
-		string info[3] = {"", "", "0"};  // 0- cond, 1- opcode + s, 2- I
-		string r[3] = {"0000", "0000", ""};
+		string info[3] = {"", "", ""};
+		string r[3] = {"", "", ""};
 		string command = "";
 		int pos, flag = 0;
 		string line;
 		getline(fin1, line);
-
 		for (int i = 0; i < line.length(); i++)
 		{
 			if (isalnum(line[i]))
@@ -184,8 +179,7 @@ int main()
 		{
 			line.erase(0, 1);
 		}
-		// cout  << line.length() << endl;
-		if (line[line.length() - 2] == ':')
+		if (line[line.length() - 1] == ':')
 		{
 			continue;
 		}
@@ -194,7 +188,6 @@ int main()
 		{
 			if (line[i] == '\t' || line[i] == ' ')
 			{
-				// cout << line << endl;
 				pos = i + 1;
 				break;
 			}
@@ -207,16 +200,15 @@ int main()
 		{
 			string match;
 			getline(fin2, match);
-			cout << match << " " << command << endl;
 			if (match == command)
 			{
 				flag = 1;
-				getline(fin2, match); // 000000	100000	00000
+				getline(fin2, match);
 				string temp1 = "";
 				int k = 0;
 				for (int i = 0; i < match.length(); i++)
 				{
-					if (match[i] == ' ')
+					if (match[i] == '\t')
 					{
 						info[k++] = temp1;
 						temp1 = "";
@@ -230,13 +222,12 @@ int main()
 				//	cout<<info[0]<<info[1]<<info[2]<<endl;
 				break;
 			}
-			getline(fin2, match);
 		}
 		if (flag == 0)
 		{
 			cout << "Syntax error in line " << count << endl;
 			cout << "Specified operation is invalid\n";
-			cout << line << endl;
+			cout << line;
 			return 0;
 		}
 		flag = 0;
@@ -245,7 +236,7 @@ int main()
 		string temp = "";
 		for (int i = pos; i < line.length(); i++)
 		{
-			if (line[i] == ',')
+			if (line[i] == ',' || line[i] == '(')
 			{
 				if (temp == "" || temp == " " || temp == ",")
 				{
@@ -261,15 +252,15 @@ int main()
 				{
 					string match;
 					getline(fin2, match);
-					// cout << match << '-' << temp << endl;
 					if (match == temp)
 					{
 						flag = 1;
 						getline(fin2, match);
+						//	cout<<match<<endl;//ddbug
 						r[k++] = match;
+						//	cout<<r[k-1]<<endl;//debug
 						break;
 					}
-					getline(fin2, match);
 				}
 				if (flag == 0)
 				{
@@ -281,44 +272,68 @@ int main()
 				fin2.close();
 				temp = "";
 			}
-			else if (line[i] != ']'){
-				if(line[i] != '[')
-					temp += line[i];
-			}
+			else if (line[i] != ')')
+				temp += line[i];
 		}
-
-		// cout << temp << '-' << info[0] << '-' << info[1] << '-' << r[0] << '-' << r[1] << '-' << r[2] << endl;
-
+		//cout<<"temp:"<<temp<<","<<endl;
 		flag = 0;
 		//ifstream fin2;
-		if (isdigit(temp[1])||temp[1]=='-')
+		//cout<<"debug"<<endl;//edbug
+		if (isdigit(temp[0])||temp[0]=='-')
 		{
-			info[2] = '1';
+			printf("1\n");
+			if (info[0] == "00000000000")
+			{
+				r[2] = convert_shift_label(temp);
+				if (r[2] == "")
+				{
+					cout << "Math error-beyond range in line " << count << endl;
+					cout << line;
+					return 0;
+				}
+				//fout1 << info[0] << r[0] << r[1] << r[2] << info[2] << info[1] << endl;
+				result = info[0] + r[0] + r[1] + r[2] + info[2] + info[1];
+				fout1 << result.substr(0, 8) << endl
+					  << result.substr(8, 8) << endl
+					  << result.substr(16, 8) << endl
+					  << result.substr(24, 8) << endl;
+				continue;
+			}
+			if (info[1] != "")
+			{
+				cout << "Syntax error in line " << count << endl;
+				cout << "Invalid operand used for the operation \n";
+				cout << line;
+				return 0;
+			}
 			r[2] = tobinary(temp);
 			if (r[2] == "")
 			{
 				cout << "Math error-beyond range in line " << count << endl;
-				cout << line << endl;
+				cout << line;
 				return 0;
 			}
 			//fout1 << info[0] << r[0] << r[1] << r[2] << info[2] << info[1] << endl;
-			result = info[0] + "00" + info[2] + info[1] + r[1] + r[0] + r[2];
-			fout1 << result << endl;
+			result = info[0] + r[1] + r[0] + r[2] + info[2] + info[1];
+			fout1 << result.substr(0, 8) << endl
+				  << result.substr(8, 8) << endl
+				  << result.substr(16, 8) << endl
+				  << result.substr(24, 8) << endl;
 			continue;
 		}
 		if (temp == "" || temp == " " || temp == ",")
 		{
 			cout << "Syntax error in line " << count << endl;
 			cout << "Additional symbols used\n";
-			cout << line << endl;
+			cout << line;
 			return 0;
 		}
 
-		if (temp[0] != 'r')
+		if (temp[0] != '$')
 		{
 			int val = label_table[temp];
 			//cout << val << "," << info[0] << "," << endl;
-			if (info[0] == "0001" || info[0] == "0010")
+			if (info[0] == "000010" || info[0] == "000011")
 			{
 				r[2] = convert_jump_label(val);
 				if (r[2] == "")
@@ -328,30 +343,32 @@ int main()
 					return 0;
 				}
 				//fout1 << info[0] << r[0] << r[1] << r[2] << info[2] << info[1] << endl;
-				result = info[0] + "00" + info[2] + info[1] + r[1] + r[0] + r[2];
-				fout1 << result << endl;
+				result = info[0] + r[0] + r[1] + r[2] + info[2] + info[1];
+				fout1 << result.substr(0, 8) << endl
+					  << result.substr(8, 8) << endl
+					  << result.substr(16, 8) << endl
+					  << result.substr(24, 8) << endl;
 				continue;
 			}
-			// else
-			// {
-			// 	int res = val - (count - 1) - 1;
-			// 	//cout << count << " " << val << " " << res << endl;
-			// 	r[2] = convert_branch_label(res);
-			// 	if (r[2] == "")
-			// 	{
-			// 		cout << "Math error-beyond range in line " << count << endl;
-			// 		cout << line;
-			// 		return 0;
-			// 	}
-			// 	//fout1 << info[0] << r[0] << r[1] << info[2] << info[1] << r[2] << endl;
-			// 	result = info[0] + r[0] + r[1] + info[2] + info[1] + r[2];
-			// 	fout1 << result.substr(0, 8) << endl
-			// 		  << result.substr(8, 8) << endl
-			// 		  << result.substr(16, 8) << endl
-			// 		  << result.substr(24, 8) << endl
-			// 		  << result << endl;
-			// 	continue;
-			// }
+			else
+			{
+				int res = val - (count - 1) - 1;
+				//cout << count << " " << val << " " << res << endl;
+				r[2] = convert_branch_label(res);
+				if (r[2] == "")
+				{
+					cout << "Math error-beyond range in line " << count << endl;
+					cout << line;
+					return 0;
+				}
+				//fout1 << info[0] << r[0] << r[1] << info[2] << info[1] << r[2] << endl;
+				result = info[0] + r[0] + r[1] + info[2] + info[1] + r[2];
+				fout1 << result.substr(0, 8) << endl
+					  << result.substr(8, 8) << endl
+					  << result.substr(16, 8) << endl
+					  << result.substr(24, 8) << endl;
+				continue;
+			}
 		}
 		fin2.open("symbol table for assembly.txt");
 		while (fin2)
@@ -362,7 +379,7 @@ int main()
 			{
 				flag = 1;
 				getline(fin2, match);
-				r[2] = match;
+				r[k++] = match;
 				break;
 			}
 		}
@@ -371,14 +388,17 @@ int main()
 		{
 			cout << "Syntax error in line " << count << endl;
 			cout << "Invalid Operand\n";
-			cout << line << endl;
+			cout << line;
 			return 0;
 		}
-		// printf("hi\n");
+		printf("hi\n");
 		//cout<<r[1]<<endl;
 		//fout1 << info[0] << r[0] << r[1] << r[2] << info[2] << info[1] << endl;
-		result = info[0] + "00" + info[2] + info[1] + r[1] + r[0] + "00000000" + r[2];
-		fout1 << result << endl;
+		result = info[0] + r[1] + r[2] + r[0] + info[2] + info[1];
+		fout1 << result.substr(0, 8) << endl
+			  << result.substr(8, 8) << endl
+			  << result.substr(16, 8) << endl
+			  << result.substr(24, 8) << endl;
 	}
 	fin1.close();
 	fout1.close();
